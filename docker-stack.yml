@@ -1,0 +1,42 @@
+version: "3"
+services:
+
+  wordpress:
+    image: wordpress
+    depends_on:
+      - mysql:mysql
+    ports:
+      - 8080:80
+    networks:
+      - frontend
+    deploy:
+      replicas: 6
+      restart_policy:
+        condition: on-failure
+
+  mysql:
+    image: mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+    networks:
+      - frontend
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - 9000:8080
+    networks:
+      - frontend
+    stop_grace_period: 1m30s
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+
+networks:
+  frontend:
